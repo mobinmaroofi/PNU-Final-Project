@@ -1,0 +1,61 @@
+enable
+conf t
+hostname ASW-A1
+do write
+
+enable secret finalpnumain
+username mobin secret @finalpnumain
+
+line console 0
+login local
+exec-timeout 30
+logging synchronous
+do write
+
+interface range g0/1-2
+switchport mode trunk
+switchport nonegotiate
+switchport trunk native vlan 1000
+switchport trunk allowed vlan 10,20,40,99
+do write
+exit
+
+vtp mode client
+
+interface f0/1
+switchport mode access
+switchport nonegotiate
+switchport access vlan 10
+switchport voice vlan 20
+exit
+
+interface range f0/2-24
+shutdown
+exit
+do write
+
+ip default-gateway 10.0.0.1
+interface vlan 99
+ip address 10.0.0.6 255.255.255.240
+exit
+do write
+
+spanning-tree mode rapid-pvst
+
+interface f0/1
+spanning-tree portfast
+spanning-tree bpduguard enable
+
+
+ip domain name finalpnumain.com
+ip name-server 10.5.0.4
+
+ntp authentication-key 1 md5 finalpnumain
+ntp trusted-key 1
+ntp server 10.0.0.76 key 1
+
+snmp-server community FINALPNUMAIN RO
+
+logging 10.5.0.4
+logging trap debugging
+logging buffered 8192
